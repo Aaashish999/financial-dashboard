@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Budget vs Actual Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.10.3/Recharts.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useMemo } = React;
+        const { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } = Recharts;
+
+        const Card = ({ children, className = '' }) => (
+            <div className={`bg-white rounded-lg shadow-md ${className}`}>
+                {children}
+            </div>
+        );
+
+        const CardHeader = ({ children }) => (
+            <div className="px-6 py-4 border-b border-gray-200">
+                {children}
+            </div>
+        );
+
+        const CardTitle = ({ children, className = '' }) => (
+            <h3 className={`text-lg font-semibold text-gray-800 ${className}`}>
+                {children}
+            </h3>
+        );
+
+        const CardContent = ({ children }) => (
+            <div className="px-6 py-4">
+                {children}
+            </div>
+        );
+
+        const FinancialDashboard = () => {
+            const rawData = [
+                { date: '2024-01', month: 'Jan', department: 'Sales', account: 'Revenue', budget: 50000, actual: 52000 },
+                { date: '2024-01', month: 'Jan', department: 'Sales', account: 'Operating Expenses', budget: 15000, actual: 14500 },
+                { date: '2024-01', month: 'Jan', department: 'Marketing', account: 'Revenue', budget: 30000, actual: 28000 },
+                { date: '2024-01', month: 'Jan', department: 'Marketing', account: 'Operating Expenses', budget: 12000, actual: 13000 },
+                { date: '2024-01', month: 'Jan', department: 'IT', account: 'Operating Expenses', budget: 8000, actual: 8500 },
+                { date: '2024-01', month: 'Jan', department: 'HR', account: 'Operating Expenses', budget: 5000, actual: 4800 },
+                
+                { date: '2024-02', month: 'Feb', department: 'Sales', account: 'Revenue', budget: 55000, actual: 58000 },
+                { date: '2024-02', month: 'Feb', department: 'Sales', account: 'Operating Expenses', budget: 16000, actual: 15800 },
+                { date: '2024-02', month: 'Feb', department: 'Marketing', account: 'Revenue', budget: 32000, actual: 31000 },
+                { date: '2024-02', month: 'Feb', department: 'Marketing', account: 'Operating Expenses', budget: 13000, actual: 14000 },
+                { date: '2024-02', month: 'Feb', department: 'IT', account: 'Operating Expenses', budget: 8000, actual: 7800 },
+                { date: '2024-02', month: 'Feb', department: 'HR', account: 'Operating Expenses', budget: 5000, actual: 5200 },
+                
+                { date: '2024-03', month: 'Mar', department: 'Sales', account: 'Revenue', budget: 58000, actual: 60000 },
+                { date: '2024-03', month: 'Mar', department: 'Sales', account: 'Operating Expenses', budget: 17000, actual: 16500 },
+                { date: '2024-03', month: 'Mar', department: 'Marketing', account: 'Revenue', budget: 35000, actual: 36000 },
+                { date: '2024-03', month: 'Mar', department: 'Marketing', account: 'Operating Expenses', budget: 14000, actual: 13800 },
+                { date: '2024-03', month: 'Mar', department: 'IT', account: 'Operating Expenses', budget: 8500, actual: 9000 },
+                { date: '2024-03', month: 'Mar', department: 'HR', account: 'Operating Expenses', budget: 5200, actual: 5000 },
+                
+                { date: '2024-04', month: 'Apr', department: 'Sales', account: 'Revenue', budget: 60000, actual: 62000 },
+                { date: '2024-04', month: 'Apr', department: 'Sales', account: 'Operating Expenses', budget: 17500, actual: 17000 },
+                { date: '2024-04', month: 'Apr', department: 'Marketing', account: 'Revenue', budget: 36000, actual: 34000 },
+                { date: '2024-04', month: 'Apr', department: 'Marketing', account: 'Operating Expenses', budget: 14500, actual: 15000 },
+                { date: '2024-04', month: 'Apr', department: 'IT', account: 'Operating Expenses', budget: 8500, actual: 8200 },
+                { date: '2024-04', month: 'Apr', department: 'HR', account: 'Operating Expenses', budget: 5200, actual: 5400 },
+                
+                { date: '2024-05', month: 'May', department: 'Sales', account: 'Revenue', budget: 62000, actual: 65000 },
+                { date: '2024-05', month: 'May', department: 'Sales', account: 'Operating Expenses', budget: 18000, actual: 17500 },
+                { date: '2024-05', month: 'May', department: 'Marketing', account: 'Revenue', budget: 38000, actual: 39000 },
+                { date: '2024-05', month: 'May', department: 'Marketing', account: 'Operating Expenses', budget: 15000, actual: 14800 },
+                { date: '2024-05', month: 'May', department: 'IT', account: 'Operating Expenses', budget: 9000, actual: 9200 },
+                { date: '2024-05', month: 'May', department: 'HR', account: 'Operating Expenses', budget: 5500, actual: 5300 },
+                
+                { date: '2024-06', month: 'Jun', department: 'Sales', account: 'Revenue', budget: 65000, actual: 67000 },
+                { date: '2024-06', month: 'Jun', department: 'Sales', account: 'Operating Expenses', budget: 18500, actual: 18000 },
+                { date: '2024-06', month: 'Jun', department: 'Marketing', account: 'Revenue', budget: 40000, actual: 38500 },
+                { date: '2024-06', month: 'Jun', department: 'Marketing', account: 'Operating Expenses', budget: 15500, actual: 16000 },
+                { date: '2024-06', month: 'Jun', department: 'IT', account: 'Operating Expenses', budget: 9000, actual: 8800 },
+                { date: '2024-06', month: 'Jun', department: 'HR', account: 'Operating Expenses', budget: 5500, actual: 5600 },
+            ];
+
+            const [selectedDepartment, setSelectedDepartment] = useState('All');
+            const [selectedMonth, setSelectedMonth] = useState('All');
+
+            const filteredData = useMemo(() => {
+                return rawData.filter(item => {
+                    const deptMatch = selectedDepartment === 'All' || item.department === selectedDepartment;
+                    const monthMatch = selectedMonth === 'All' || item.month === selectedMonth;
+                    return deptMatch && monthMatch;
+                });
+            }, [selectedDepartment, selectedMonth]);
+
+            const kpis = useMemo(() => {
+                const revenue = filteredData
+                    .filter(d => d.account === 'Revenue')
+                    .reduce((sum, d) => sum + d.actual, 0);
+                
+                const expenses = filteredData
+                    .filter(d => d.account === 'Operating Expenses')
+                    .reduce((sum, d) => sum + d.actual, 0);
+                
+                const budgetTotal = filteredData.reduce((sum, d) => sum + d.budget, 0);
+                const actualTotal = filteredData.reduce((sum, d) => sum + d.actual, 0);
+                const variance = actualTotal - budgetTotal;
+                const variancePercent = budgetTotal > 0 ? (variance / budgetTotal) * 100 : 0;
+                
+                const profit = revenue - expenses;
+                const profitMargin = revenue > 0 ? (profit / revenue) * 100 : 0;
+
+                return {
+                    revenue,
+                    expenses,
+                    profit,
+                    profitMargin,
+                    variance,
+                    variancePercent,
+                    budgetTotal,
+                    actualTotal
+                };
+            }, [filteredData]);
+
+            const departmentSummary = useMemo(() => {
+                const departments = ['Sales', 'Marketing', 'IT', 'HR'];
+                return departments.map(dept => {
+                    const deptData = filteredData.filter(d => d.department === dept);
+                    const budget = deptData.reduce((sum, d) => sum + d.budget, 0);
+                    const actual = deptData.reduce((sum, d) => sum + d.actual, 0);
+                    const variance = actual - budget;
+                    const variancePercent = budget > 0 ? (variance / budget) * 100 : 0;
+                    
+                    return {
+                        department: dept,
+                        budget,
+                        actual,
+                        variance,
+                        variancePercent
+                    };
+                });
+            }, [filteredData]);
+
+            const trendData = useMemo(() => {
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+                return months.map(month => {
+                    const monthData = rawData.filter(d => d.month === month);
+                    const revenue = monthData
+                        .filter(d => d.account === 'Revenue')
+                        .reduce((sum, d) => sum + d.actual, 0);
+                    const expenses = monthData
+                        .filter(d => d.account === 'Operating Expenses')
+                        .reduce((sum, d) => sum + d.actual, 0);
+                    const budget = monthData.reduce((sum, d) => sum + d.budget, 0);
+                    const actual = monthData.reduce((sum, d) => sum + d.actual, 0);
+                    
+                    return {
+                        month,
+                        revenue,
+                        expenses,
+                        budget,
+                        actual
+                    };
+                });
+            }, []);
+
+            const deptComparisonData = useMemo(() => {
+                return departmentSummary.map(d => ({
+                    department: d.department,
+                    Budget: d.budget,
+                    Actual: d.actual
+                }));
+            }, [departmentSummary]);
+
+            const formatCurrency = (value) => {
+                return new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0,
+                }).format(value);
+            };
+
+            const departments = ['All', 'Sales', 'Marketing', 'IT', 'HR'];
+            const months = ['All', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+
+            return (
+                <div className="w-full min-h-screen bg-gray-50 p-6">
+                    <div className="max-w-7xl mx-auto space-y-6">
+                        <div className="text-center mb-8">
+                            <h1 className="text-4xl font-bold text-gray-800 mb-2">Financial Budget vs Actual Dashboard</h1>
+                            <p className="text-gray-600">Real-time financial performance tracking and variance analysis</p>
+                        </div>
+
+                        <div className="flex gap-4 bg-white p-4 rounded-lg shadow">
+                            <div className="flex-1">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>
+                                <select
+                                    value={selectedDepartment}
+                                    onChange={(e) => setSelectedDepartment(e.target.value)}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                >
+                                    {departments.map(dept => (
+                                        <option key={dept} value={dept}>{dept}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="flex-1">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Month</label>
+                                <select
+                                    value={selectedMonth}
+                                    onChange={(e) => setSelectedMonth(e.target.value)}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                >
+                                    {months.map(month => (
+                                        <option key={month} value={month}>{month}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                            <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+                                <CardHeader>
+                                    <CardTitle className="text-sm font-medium text-white">Total Revenue</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-3xl font-bold">{formatCurrency(kpis.revenue)}</div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="bg-gradient-to-br from-red-500 to-red-600 text-white">
+                                <CardHeader>
+                                    <CardTitle className="text-sm font-medium text-white">Total Expenses</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-3xl font-bold">{formatCurrency(kpis.expenses)}</div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
+                                <CardHeader>
+                                    <CardTitle className="text-sm font-medium text-white">Profit</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-3xl font-bold">{formatCurrency(kpis.profit)}</div>
+                                    <div className="text-sm mt-1">Margin: {kpis.profitMargin.toFixed(1)}%</div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className={`bg-gradient-to-br ${kpis.variance >= 0 ? 'from-green-500 to-green-600' : 'from-red-500 to-red-600'} text-white`}>
+                                <CardHeader>
+                                    <CardTitle className="text-sm font-medium text-white">Variance</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-3xl font-bold">{formatCurrency(kpis.variance)}</div>
+                                    <div className="text-sm mt-1">{kpis.variance >= 0 ? '+' : ''}{kpis.variancePercent.toFixed(1)}%</div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+                                <CardHeader>
+                                    <CardTitle className="text-sm font-medium text-white">Budget Utilization</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-3xl font-bold">
+                                        {kpis.budgetTotal > 0 ? ((kpis.actualTotal / kpis.budgetTotal) * 100).toFixed(1) : 0}%
+                                    </div>
+                                    <div className="text-sm mt-1">{formatCurrency(kpis.actualTotal)} / {formatCurrency(kpis.budgetTotal)}</div>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Department Performance Summary</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full">
+                                        <thead>
+                                            <tr className="border-b bg-gray-50">
+                                                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Department</th>
+                                                <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Budget</th>
+                                                <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Actual</th>
+                                                <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Variance</th>
+                                                <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Variance %</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {departmentSummary.map((dept, idx) => (
+                                                <tr key={idx} className="border-b hover:bg-gray-50">
+                                                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{dept.department}</td>
+                                                    <td className="px-4 py-3 text-sm text-right text-gray-700">{formatCurrency(dept.budget)}</td>
+                                                    <td className="px-4 py-3 text-sm text-right text-gray-700">{formatCurrency(dept.actual)}</td>
+                                                    <td className={`px-4 py-3 text-sm text-right font-semibold ${dept.variance >= 0 ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'}`}>
+                                                        {formatCurrency(dept.variance)}
+                                                    </td>
+                                                    <td className={`px-4 py-3 text-sm text-right font-semibold ${dept.variancePercent >= 0 ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'}`}>
+                                                        {dept.variancePercent >= 0 ? '+' : ''}{dept.variancePercent.toFixed(1)}%
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Budget vs Actual by Department</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <ResponsiveContainer width="100%" height={300}>
+                                        <BarChart data={deptComparisonData}>
+                                            <CartesianGrid strokeDasharray="3 3" />
+                                            <XAxis dataKey="department" />
+                                            <YAxis />
+                                            <Tooltip formatter={(value) => formatCurrency(value)} />
+                                            <Legend />
+                                            <Bar dataKey="Budget" fill="#3b82f6" />
+                                            <Bar dataKey="Actual" fill="#f97316" />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Variance by Department</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <ResponsiveContainer width="100%" height={300}>
+                                        <BarChart data={departmentSummary}>
+                                            <CartesianGrid strokeDasharray="3 3" />
+                                            <XAxis dataKey="department" />
+                                            <YAxis />
+                                            <Tooltip formatter={(value) => formatCurrency(value)} />
+                                            <Bar dataKey="variance">
+                                                {departmentSummary.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={entry.variance >= 0 ? '#10b981' : '#ef4444'} />
+                                                ))}
+                                            </Bar>
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Revenue & Expenses Trend</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <ResponsiveContainer width="100%" height={300}>
+                                        <LineChart data={trendData}>
+                                            <CartesianGrid strokeDasharray="3 3" />
+                                            <XAxis dataKey="month" />
+                                            <YAxis />
+                                            <Tooltip formatter={(value) => formatCurrency(value)} />
+                                            <Legend />
+                                            <Line type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={2} name="Revenue" />
+                                            <Line type="monotone" dataKey="expenses" stroke="#ef4444" strokeWidth={2} name="Expenses" />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Budget vs Actual Trend</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <ResponsiveContainer width="100%" height={300}>
+                                        <LineChart data={trendData}>
+                                            <CartesianGrid strokeDasharray="3 3" />
+                                            <XAxis dataKey="month" />
+                                            <YAxis />
+                                            <Tooltip formatter={(value) => formatCurrency(value)} />
+                                            <Legend />
+                                            <Line type="monotone" dataKey="budget" stroke="#3b82f6" strokeWidth={2} strokeDasharray="5 5" name="Budget" />
+                                            <Line type="monotone" dataKey="actual" stroke="#f97316" strokeWidth={2} name="Actual" />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<FinancialDashboard />, document.getElementById('root'));
+    </script>
+</body>
+</html>
